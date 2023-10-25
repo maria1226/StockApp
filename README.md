@@ -1,12 +1,12 @@
 # Stock Insights Dashboard
 
-Welcome to the StockApp web app, a tool for analyzing and gaining insights into stock market data. This application is built using Node.js and TypeScript.
+Welcome to the stock web app - a tool for analyzing and gaining insights into stock market data. This application is built using Node.js and TypeScript.
 
 ## Overview
 
 During the selected time frame, this dashboard suggests the following stock market insights:
 
-- The Best day to buy & price
+- Best day to buy & price
 - Best day to sell & price
 
 ## Installation
@@ -15,9 +15,7 @@ Follow these steps to set up and run the StockApp:
 
 1. **Clone the Repository:**
 ```
-git clone [repository URL]
-```
-```
+git clone https://github.com/maria1226/stockapp.git
 cd stockapp
 ```
 
