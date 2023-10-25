@@ -1,0 +1,11 @@
+type Query {
+  stocks(startDate: String, endDate: String): StockList!
+}
+type StockList {
+  stocks: [Stock!]!
+}
+type Stock {
+  id: ID!
+  date: String
+  price: Int
+}
