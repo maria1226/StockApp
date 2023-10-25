@@ -1,0 +1,16 @@
+.custom-chart-container {
+  height: 500px; /* Set the desired height */
+  width: 800px; /* Set the desired width */
+}
+
+.custom-chart-container .recharts-wrapper > svg:nth-child(1) {
+  stroke: red; /* Set your desired color */
+}
+.container {
+  min-height: 90vh;
+  padding: 0 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
