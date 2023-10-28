@@ -14,29 +14,8 @@ services:
   
 volumes:
   postgres_data:
-# backend:
-#     build:
-#       context: .
-#       dockerfile: Dockerfile
-#     container_name: my-backend
-#     depends_on:
-#       - postgres
-#     ports:
-#       - "3000:3000"
-# volumes:
-#   postgres_data:
-# services:
-#   db:
-#     image: postgres
-#     restart: always
-#     environment:
-#       POSTGRES_PASSWORD: example
-#     ports:
-#       - '5432:5432'
-#     networks:
-#       - my_network
-
-  # app:
+  # TODO
+  #  app:
   #   build:
   #     context: .
   #     dockerfile: Dockerfile
