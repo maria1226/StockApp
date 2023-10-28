@@ -2,30 +2,26 @@ version: '3.1'
 
 services:
   db:
-    image: postgres
-    restart: always
+    image: postgres:latest
+    container_name: my-postgres
     environment:
-      MYSQL_ROOT_PASSWORD: example
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
     ports:
-      - '5432:5432'
-    networks:
-      - my_network
-
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+      - "5432:5432"
     volumes:
-      - .:/app
-    ports:
-      - '4000:4000'
-    depends_on:
-      - db
-    networks:
-      - my_network
-    env_file:
-      -.env
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
+#TODO
+# backend:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     container_name: my-backend
+#     depends_on:
+#       - postgres
+#     ports:
+#       - "3000:3000"
 
-networks:
-  my_network:
-    driver: bridge
