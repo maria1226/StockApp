@@ -1,15 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import {
-  LineChart,//for creating line charts
-  Line,//Represents the line in the line chart
-  XAxis,
-  YAxis,
-  CartesianGrid,//Adds grid lines to the chart
-  Tooltip,//Displays tooltips when hovering over data points
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
-import "../styles/Home.module.css"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import "../styles/Home.module.css";
+import { fetchDataFromBackend } from '../api/api';
+
 interface StockData {
   date: string;
   price: number;
@@ -21,6 +14,7 @@ interface StockGraphProps {
 }
 
 function StockGraph({ data, onDateSelect }: StockGraphProps) {
+  // States for selected date range and price analysis
   const [startData, setStartData] = useState<string | null>(null);
   const [endData, setEndData] = useState<string | null>(null);
   const [dateForBuy, setDateForBuy] = useState<string | null>(null);
@@ -28,71 +22,85 @@ function StockGraph({ data, onDateSelect }: StockGraphProps) {
   const [lowestPrice, setLowestPrice] = useState<number | null>(null);
   const [highestPrice, setHighestPrice] = useState<number | null>(null);
 
+  // Function to handle user click to select start and end dates
   const handleDateClick = (entry: StockData) => {
-    if (!startData || !endData) {
-      // Check if both start and end dates are not selected
-      if (!startData) {
-        setStartData(entry.date);
-      } else if (!endData) {
-        setEndData(entry.date);
-        if (entry.date < startData) {
-          // Alert the user when the selected end date is before the start date
-          alert(`End date (${entry.date}) cannot be before the start date (${startData}). Please choose a date after ${startData}.`);
-          setEndData(null);
-        }
-      }
-      // Invoke the callback function with the selected dates
-      if (onDateSelect && startData && endData) {
-        onDateSelect({ start: startData, end: endData });
-      }
-    } else {
+    if (startData && endData) {
       alert('You have already selected both start and end dates. Clear selection to choose again.');
+      return;
+    }
+  
+    if (!startData) {
+      setStartData(entry.date);
+    } else if (!endData && entry.date >= startData) {
+      setEndData(entry.date);
+      if (onDateSelect) {
+        onDateSelect({ start: startData, end: entry.date });
+      }
+    } else if (!endData && entry.date < startData) {
+      alert(`End date (${entry.date}) cannot be before the start date (${startData}). Please choose a date after ${startData}.`);
     }
   };
-  
-  // Function to find and analyze prices within a specified date range
-const findPricesInPeriod = () => {
-  // Check if startData, endData, and the validity of the date range are all true
-  if (startData && endData && startData <= endData) {
-    // Filter data entries that fall within the specified date range
-    
-    const pricesInPeriod = data.filter((entry) =>//filters the data array to create a new array called pricesInPeriod,
-    //which contains only those entries whose date falls between startData and endData
-      entry.date >= startData && entry.date <= endData
-    );
-
-    // Check if there are prices in the specified date range
-    if (pricesInPeriod.length > 0) {//check the length of array
-      // Extract price values from the filtered data
-      const priceValues = pricesInPeriod.map((entry) => entry.price);
-
-      // Calculate the minimum and maximum prices within the range
-      const minPrice = Math.min(...priceValues);
-      const maxPrice = Math.max(...priceValues);
-
-      // Utility function to find the date associated with a given price
-      const findDate = (price) =>
-        pricesInPeriod.find((entry) => entry.price === price)?.date || null;
-
-      // Set the date for buying (lowest price date) and selling (highest price date)
-      setDateForBuy(findDate(minPrice));
-      setSellDate(findDate(maxPrice));
-      setLowestPrice(minPrice);
-      setHighestPrice(maxPrice);
-    } else {
-      // If there are no prices in the specified date range, reset the state variables
-      setDateForBuy(null);
-      setSellDate(null);
-      setLowestPrice(null);
-      setHighestPrice(null);
+  // Function to fetch data when start and end dates are selected
+  const fetchData = async () => {
+    if (startData && endData) {
+      try {
+        const response = await fetchDataFromBackend(startData, endData);
+        // Process response data if needed
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     }
-  }
-};
+  };
 
+  // Use useEffect to refetch data when startData or endData changes
+  useEffect(() => {
+    fetchData();
+  }, [startData, endData]);
+
+
+  // Function to find and analyze prices within a specified date range
+  const findPricesInPeriod = () => {
+    // Check if startData, endData, and the validity of the date range are all true
+    if (startData && endData && startData <= endData) {
+      // Filter data entries that fall within the specified date range
+      const pricesInPeriod = data.filter((entry) =>
+        entry.date >= startData && entry.date <= endData
+      );
+
+      // Check if there are prices in the specified date range
+      if (pricesInPeriod.length > 0) {
+        // Extract price values from the filtered data
+        const priceValues = pricesInPeriod.map((entry) => entry.price);
+
+        // Calculate the minimum and maximum prices within the range
+        const minPrice = Math.min(...priceValues);
+        const maxPrice = Math.max(...priceValues);
+
+        // Utility function to find the date associated with a given price
+        const findDate = (price: number) =>
+          pricesInPeriod.find((entry) => entry.price === price)?.date || null;
+
+        // Set the date for buying (lowest price date) and selling (highest price date)
+        setDateForBuy(findDate(minPrice));
+        setSellDate(findDate(maxPrice));
+        setLowestPrice(minPrice);
+        setHighestPrice(maxPrice);
+      } else {
+        // If there are no prices in the specified date range, reset the state variables
+        setDateForBuy(null);
+        setSellDate(null);
+        setLowestPrice(null);
+        setHighestPrice(null);
+      }
+    }
+  };
+
+  // Use useEffect to analyze prices when startData, endData, or data changes
   useEffect(() => {
     findPricesInPeriod();
   }, [startData, endData, data]);
 
+  // Function to clear the selected date range
   const clearSelection = () => {
     setStartData(null);
     setEndData(null);
@@ -100,8 +108,14 @@ const findPricesInPeriod = () => {
     setSellDate(null);
     setLowestPrice(null);
     setHighestPrice(null);
+    
+    // Clear the selected date range and refetch data when the selection is cleared
+    if (onDateSelect) {
+      onDateSelect({ start: null, end: null });
+    }
   };
 
+  // CustomizedDot component for rendering a clickable dot on the chart
   const CustomizedDot = (props: any) => {
     const { cx, cy, payload } = props;
     return (
@@ -117,7 +131,6 @@ const findPricesInPeriod = () => {
       </g>
     );
   };
-
   return (
     <div>
       <ResponsiveContainer width="100%" height={400}>
@@ -136,31 +149,31 @@ const findPricesInPeriod = () => {
         </LineChart>
       </ResponsiveContainer>
       <div className="mainDiv">
-      {(startData || endData) && (
-        <button className="button-85" onClick={clearSelection}>
-        Click to clear
-        </button>
-      )}
-      <div className="line1" />
-      {startData && endData && (
-      <div className="research">
-    Period from {startData} to {endData}.<br/>
-    During the selected time frame, we suggest the following:
+        {(startData || endData) && (
+          <button className="button-85" onClick={clearSelection}>
+            Click to clear
+          </button>
+        )}
+        <div className="line1" />
+        {startData && endData && (
+          <div className="research">
+            Period from {startData} to {endData}.<br />
+            During the selected time frame, we suggest the following:
+          </div>
+        )}
+        {lowestPrice !== null && dateForBuy !== null && (
+          <div className="research">
+            Best Day to Buy: {dateForBuy}<br />
+            Price: {lowestPrice}<br />
+          </div>
+        )}
+        {highestPrice !== null && sellDate !== null && (
+          <div className="research">
+            Best Day to Sell: {sellDate}<br />
+            Price: {highestPrice}<br />
+          </div>
+        )}
       </div>
-      )}
-      {lowestPrice !== null && dateForBuy !== null &&(
-        <div className="research">
-        Best Day to Buy: {dateForBuy}<br/>
-        Price: {lowestPrice}<br/>
-        </div>
-      )}
-      {highestPrice !== null && sellDate !== null && (
-        <div className="research">
-        Best Day to Sell: {sellDate}<br/>
-        Price: {highestPrice}<br/>
-        </div>
-      )}
-    </div>
 
     </div>
   );
