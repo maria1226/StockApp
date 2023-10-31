@@ -46,6 +46,16 @@ cd stockapp/StockApp-BE
 npm install prisma
 ```
 
+8. **Generate Prisma Client:**
+```
+npx prisma generate
+```
+
+9. **Run Migrations:**
+This command will create or update database schema based on schema.prisma file.
+```
+npx prisma migrate dev
+```
 
 ## Seed the Database
 Seed the database with stock data using one of the following commands:
